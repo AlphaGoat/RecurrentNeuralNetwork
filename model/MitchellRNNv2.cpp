@@ -185,7 +185,7 @@ std::array<float, NUM_RECURRENT_UNITS> MitchellRNNv2::cell_backpropagation(
     std::array<float, NUM_RECURRENT_UNITS> current_state_error_grads; // error gradients for this cell's outputs
 //    std::array<float, NUM_RECURRENT_UNITS> recurrent_error_grads;  // error gradients for subsequence cell's outputs
 
-    std::array<float, NUM_RECURRENT_UNITS> last_step_grad = cache_last_step_error_grad.back();
+//    std::array<float, NUM_RECURRENT_UNITS> last_step_grad = cache_last_step_error_grad.back();
     for (int i = 0; i < NUM_RECURRENT_UNITS; i++) {
         float curr_error_term = 0.0;
         float recur_error_term = 0.0;
@@ -203,14 +203,14 @@ std::array<float, NUM_RECURRENT_UNITS> MitchellRNNv2::cell_backpropagation(
 
         /* This is just for analysis of the gradient later. Compute each time step's 
          * contribution to the error gradient of the last time step */
-        if (last_time_step) 
-            last_step_grad[i] = current_state_error_grads[i];
-        else
-            last_step_grad[i] = (current_state[i] * (1 - current_state[i])) * last_step_grad[i];
+//        if (last_time_step) 
+//            last_step_grad[i] = current_state_error_grads[i];
+//        else
+//            last_step_grad[i] = (current_state[i] * (1 - current_state[i])) * last_step_grad[i];
     }
 
     /* Push the last error grad to cache */
-    cache_last_step_error_grad.push_back(last_step_grad);
+//    cache_last_step_error_grad.push_back(last_step_grad);
 
     /* Concatenate inputs */
     std::array<float, NUM_INPUTS + NUM_RECURRENT_UNITS> concat_inputs;

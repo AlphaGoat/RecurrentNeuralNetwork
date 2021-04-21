@@ -20,6 +20,14 @@ int main(int argc, char **argv) {
     float momentum = 0.01;
     float weight_decay = 0.001;
     int num_epochs = 100;
+
+    // Gradient clipping hyperparameters 
+    // (only used for ModifiedRNN. Setting these 
+    // for MitchellRNN will do nothing!)
+    float gradient_clipping_threshold = 1.0;
+    float gradient_norm_threshold = 1.0;
+    bool enable_gradient_clipping = false;
+    bool enable_gradient_norm_threshold = false;
     int MODEL_FLAG = MITCHELLRNNv2;
 
     std::string model_tag = "MitchellRNNv2";
@@ -57,6 +65,30 @@ int main(int argc, char **argv) {
                 if (!(ss >> weight_decay)) 
                     std::cout << arg << " recieved an invalid input for arg\n";
                 
+            }
+        }
+        else if ((arg == "-G") || (arg == "--enable_gradient_clipping")) {
+            enable_gradient_clipping = true;
+        }
+
+        else if ((arg == "-T") || (arg == "--enable_gradient_norm_threshold")) {
+            enable_gradient_norm_threshold = true;
+        }
+
+        else if ((arg == "-C") || (arg == "--gradient_clipping_threshold")) {
+            if (i + 1 < argc) {
+                std::istringstream ss(argv[i+1]);
+                if (!(ss >> gradient_clipping_threshold)) {
+                    std::cout << arg << " recieved an invalid input for arg " << arg << "\n";
+                }
+            }
+        }
+        else if ((arg == "-N") || (arg == "--gradient_norm_threshold")) {
+            if (i + 1 < argc) {
+                std::istringstream ss(argv[i+1]);
+                if (!(ss >> gradient_norm_threshold)) {
+                    std::cout << arg << " recieved an invalid input for arg " << arg << "\n";
+                }
             }
         }
         else if ((arg == "-t") || (arg == "--model_type")) {
@@ -144,7 +176,9 @@ int main(int argc, char **argv) {
     std::unique_ptr<RNNBase> rnn_ptr;
     if (MODEL_FLAG == MODIFIEDRNNv2) {
         rnn_ptr = std::make_unique<RecurrentNeuralNetworkv2>(learning_rate,
-                                momentum, weight_decay);
+                                momentum, weight_decay, gradient_clipping_threshold,
+                                gradient_norm_threshold, enable_gradient_clipping,
+                                enable_gradient_norm_threshold);
     }
     else {
         rnn_ptr = std::make_unique<MitchellRNNv2>(learning_rate,

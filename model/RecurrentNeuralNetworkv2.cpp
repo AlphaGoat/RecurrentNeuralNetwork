@@ -14,15 +14,16 @@ std::default_random_engine rnnv2_generator;
 std::uniform_real_distribution<float> rnnv2_distribution(-1, 1);
 
 RecurrentNeuralNetworkv2::RecurrentNeuralNetworkv2(
-        float learning_rate, float momentum, float weight_decay) {
-//        float grad_clip_val_threshold, float grad_clip_norm_threshold,
-//        bool enable_gradient_clipping) {
+        float learning_rate, float momentum, float weight_decay,
+        float grad_clip_threshold, float grad_norm_threshold,
+        bool enable_gradient_clipping, bool enable_gradient_norm_threshold) {
     RecurrentNeuralNetworkv2::learning_rate = learning_rate;
     RecurrentNeuralNetworkv2::momentum = momentum;
     RecurrentNeuralNetworkv2::weight_decay = weight_decay;
-//    RecurrentNeuralNetworkv2::grad_clip_val_threshold = grad_clip_val_threshold;
-//    RecurrentNeuralNetworkv2::grad_clip_norm_threshold = grad_clip_norm_threshold;
-//    RecurrentNeuralNetworkv2::enable_gradient_clipping = enable_gradient_clipping;
+    RecurrentNeuralNetworkv2::grad_clip_threshold = grad_clip_threshold;
+    RecurrentNeuralNetworkv2::grad_norm_threshold = grad_norm_threshold;
+    RecurrentNeuralNetworkv2::enable_gradient_clipping = enable_gradient_clipping;
+    RecurrentNeuralNetworkv2::enable_gradient_norm_threshold = enable_gradient_norm_threshold;
     RecurrentNeuralNetworkv2::initialize_weights();
 }
 
@@ -225,6 +226,15 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::cell_backpropag
         current_state_error_grads[i] = leaky_relu_backprop(current_state[i]) 
                             * (current_error_term + recurring_error_term);
 
+    }
+
+    /* Clip gradient if enabled */
+    if (enable_gradient_clipping) {
+        current_state_error_grads = gradient_clipping(current_state_error_grads);
+    }
+
+    if (enable_gradient_norm_threshold) {
+        current_state_error_grads = gradient_norm_scaling(current_state_error_grads);
     }
 
     /* Concatenate inputs */
@@ -513,11 +523,11 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::gradient_clippi
      * model hyperparameters) */
     std::array<float, NUM_RECURRENT_UNITS> clipped_gradient;
     for (int i = 0; i < NUM_RECURRENT_UNITS; i++) {
-        if (gradient[i] <= -grad_clip_val_threshold) {
-            clipped_gradient[i] = -grad_clip_val_threshold;
+        if (gradient[i] <= -grad_clip_threshold) {
+            clipped_gradient[i] = -grad_clip_threshold;
         }
-        else if (gradient[i] >= grad_clip_val_threshold) {
-            clipped_gradient[i] = grad_clip_val_threshold;
+        else if (gradient[i] >= grad_clip_threshold) {
+            clipped_gradient[i] = grad_clip_threshold;
         }
         else {
             clipped_gradient[i] = gradient[i];
@@ -539,9 +549,9 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::gradient_norm_s
     L2_norm = std::sqrt(L2_norm);
     
     std::array<float, NUM_RECURRENT_UNITS> clipped_gradient;
-    if (L2_norm >= grad_clip_norm_threshold) {
+    if (L2_norm >= grad_norm_threshold) {
         for (int i = 0; i < NUM_RECURRENT_UNITS; i++) {
-            clipped_gradient[i] = gradient[i] * (grad_clip_norm_threshold / L2_norm); 
+            clipped_gradient[i] = gradient[i] * (grad_norm_threshold / (L2_norm + OFFSET)); 
         }
         return clipped_gradient;
     }

@@ -21,6 +21,11 @@ int main(int argc, char **argv) {
     float momentum = 0.001;
     float weight_decay = 0.001;
     int num_epochs = 2500;
+
+    float gradient_norm_threshold = 1.0;
+    float gradient_clipping_threshold = 1.0;
+    bool enable_gradient_clipping = true;
+    bool enable_gradient_norm_threshold = true;
     int MODEL_FLAG = MITCHELLRNNv2;
 
     for (int i = 1; i < argc; ++i) {
@@ -147,7 +152,9 @@ int main(int argc, char **argv) {
 //        rnn = new RecurrentNeuralNetworkv2(learning_rate, momentum, weight_decay);
 //        rnn_ptr = std::move(ptr);
         rnn_ptr.reset(new RecurrentNeuralNetworkv2(learning_rate, 
-                    momentum, weight_decay));
+                    momentum, weight_decay, gradient_clipping_threshold,
+                    gradient_norm_threshold, enable_gradient_clipping,
+                    enable_gradient_norm_threshold));
     }
     else {
 //        auto ptr = std::make_unique<MitchellRNNv2>(learning_rate,
