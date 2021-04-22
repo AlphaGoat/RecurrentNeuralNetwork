@@ -8,9 +8,17 @@
 #include <string>
 
 /* MODEL PARAMETERS */
+#ifndef NUM_INPUTS
 #define NUM_INPUTS 10
+#endif
+
+#ifndef NUM_OUTPUTS
 #define NUM_OUTPUTS 5 
+#endif
+
+#ifndef NUM_RECURRENT_UNITS
 #define NUM_RECURRENT_UNITS 4
+#endif
 
 /* PARAMETERS FOR DATA UTILITIES */
 #define MEDIAN_WINDOW_SIZE 5

@@ -375,17 +375,17 @@ def reformat_sign_dataset():
 
 
 if __name__ == '__main__':
-#    train_datadir = "vowels/original_train"
-##    train_datafile = os.path.join(train_datadir, "ae.train")
-##    reformat_vowel_trainset(train_datafile, train_datadir)
-##
-#    val_datadir = "vowels/original_val"
-##    val_datafile = os.path.join(val_datadir, "ae.test")
-#    val_datafile = "ae.test"
-##    reformat_vowel_testset(val_datafile, val_datadir)
+    train_datadir = "vowels/original_train"
+    train_datafile = os.path.join(train_datadir, "ae.train")
+    reformat_vowel_trainset(train_datafile, train_datadir)
 #
-#    relabel_valid_set(train_datadir, val_datadir)
-#    get_whole_batch(train_datadir, val_datadir)
+    val_datadir = "vowels/original_val"
+    val_datafile = os.path.join(val_datadir, "ae.test")
+    val_datafile = "ae.test"
+    reformat_vowel_testset(val_datafile, val_datadir)
+#
+    relabel_valid_set(train_datadir, val_datadir)
+    get_whole_batch(train_datadir, val_datadir)
 #
 #    encode_iris_classifications()
 

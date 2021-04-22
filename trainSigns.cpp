@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     float learning_rate = 0.01;
     float momentum = 0.01;
     float weight_decay = 0.001;
-    int num_epochs = 100;
+    int num_epochs = 20;
 
     // Gradient clipping hyperparameters 
     // (only used for ModifiedRNN. Setting these 
@@ -98,6 +98,7 @@ int main(int argc, char **argv) {
         else if ((arg == "-H") || (arg == "--He_initialization")) {
             He_initialization = true;
         }
+
 
         else if ((arg == "-t") || (arg == "--model_type")) {
             if (i + 1 < argc) {
@@ -221,7 +222,13 @@ int main(int argc, char **argv) {
             int truth_label = train_pairs[j].second;
 
             // load data instance from file
-            sign_data_instance_t data_instance = read_csv(filename);
+           sign_data_instance_t data_instance;
+
+            try {
+                 data_instance = read_csv(filename);
+            } catch (std::runtime_error e1) {
+                continue;
+            }
 
             // Apply median filter to data instance 
             data_instance = median_filter_1D(data_instance);

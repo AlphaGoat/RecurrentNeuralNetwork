@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     float learning_rate = 0.01;
     float momentum = 0.01;
     float weight_decay = 0.001;
-    int num_epochs = 100;
+    int num_epochs = 20;
 
     /* Gradient clipping hyperparameters */
     float gradient_clipping_threshold = 1.0;
