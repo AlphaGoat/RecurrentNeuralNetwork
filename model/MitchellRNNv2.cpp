@@ -16,11 +16,13 @@ std::default_random_engine mitchell_generator;
 std::uniform_real_distribution<float> mitchell_distribution(-1, 1);
 
 
-MitchellRNNv2::MitchellRNNv2(float learning_rate, float momentum, float weight_decay) {
+MitchellRNNv2::MitchellRNNv2(float learning_rate, float momentum, float weight_decay,
+        bool normal_weight_updates) {
     MitchellRNNv2::learning_rate = learning_rate;
     MitchellRNNv2::momentum = momentum;
     MitchellRNNv2::weight_decay = weight_decay;
     MitchellRNNv2::initialize_weights();
+    MitchellRNNv2::NORMAL_UPDATES_FLAG = normal_weight_updates;
 }
 
 void MitchellRNNv2::initialize_weights() {

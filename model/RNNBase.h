@@ -61,6 +61,7 @@ class RNNBase {
     float momentum;
     float weight_decay;
 
+
 //    recurrent_weights_t recurrent_layer_weights;
 //    output_weights_t output_layer_weights;
 //
@@ -74,6 +75,8 @@ class RNNBase {
 //    std::vector<float> cache_output_bias_updates;
 
     public:
+        bool NORMAL_UPDATES_FLAG;
+
 //        RNNBase(float learning_rate, float momentum, float weight_decay);
 //        RNNBase(float learning_rate, float momentum, float weight_decay);
         virtual float train(std::vector<std::array<float, NUM_INPUTS>> &sequence,
@@ -82,6 +85,9 @@ class RNNBase {
         virtual void save_weights(std::string filename) = 0;
         virtual void load_weights(std::string filename) = 0;
         virtual ~RNNBase() {}
+
+    private:
+        float normal_distribution(float x, float mean, float stddev);
 
 //    private:
 

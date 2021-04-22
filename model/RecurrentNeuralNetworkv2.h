@@ -77,7 +77,8 @@ class RecurrentNeuralNetworkv2: public RNNBase {
                 float grad_clip_threshold, float grad_norm_threshold,
                 bool enable_gradient_clipping,
                 bool enable_gradient_norm_threshold,
-                bool He_initialization);
+                bool He_initialization,
+                bool normal_weight_updates);
         float train(std::vector<std::array<float, NUM_INPUTS>> &sequence,
                 int truth_label);
         int inference(std::vector<std::array<float, NUM_INPUTS>> &sequence);

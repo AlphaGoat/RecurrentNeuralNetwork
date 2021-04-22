@@ -31,3 +31,11 @@ void print_gradient_to_file(std::string model_name,
     }
     outfile << "\n";
 }
+
+float RNNBase::normal_distribution(float x, float mean, float stddev) {
+    /* Get the probability value of the normal 
+     * distribution at some x given a mean and 
+     * stddev */
+    float expTerm = std::exp((-1.0/2.0) * std::pow((x - mean) / stddev, 2.0));
+    return (1.0 / (mean * std::sqrt(2 * M_PI))) * expTerm;
+}

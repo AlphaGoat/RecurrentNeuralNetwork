@@ -16,7 +16,7 @@ RecurrentNeuralNetworkv2::RecurrentNeuralNetworkv2(
         float learning_rate, float momentum, float weight_decay,
         float grad_clip_threshold, float grad_norm_threshold,
         bool enable_gradient_clipping, bool enable_gradient_norm_threshold,
-        bool He_initialization) {
+        bool He_initialization, bool normal_weight_updates) {
     RecurrentNeuralNetworkv2::learning_rate = learning_rate;
     RecurrentNeuralNetworkv2::momentum = momentum;
     RecurrentNeuralNetworkv2::weight_decay = weight_decay;
@@ -25,6 +25,7 @@ RecurrentNeuralNetworkv2::RecurrentNeuralNetworkv2(
     RecurrentNeuralNetworkv2::enable_gradient_clipping = enable_gradient_clipping;
     RecurrentNeuralNetworkv2::enable_gradient_norm_threshold = enable_gradient_norm_threshold;
     RecurrentNeuralNetworkv2::He_initialization = He_initialization;
+    RecurrentNeuralNetworkv2::NORMAL_UPDATES_FLAG = normal_weight_updates;
     RecurrentNeuralNetworkv2::initialize_weights();
 }
 

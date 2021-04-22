@@ -38,6 +38,11 @@ class MitchellRNNv2: public RNNBase {
     // Internal count of number of time steps in 
     // last sequence 
     int NUM_TIME_STEPS;
+    int CURR_TIME_STEP;
+
+    // Flag for whether or not to use normal distribution 
+    // to weight parameter updates
+    bool NORMAL_UPDATES_FLAG;
 
     // Model parameters
     recurrent_weights_t recurrent_layer_weights;
@@ -66,7 +71,8 @@ class MitchellRNNv2: public RNNBase {
 
     public:
 
-        MitchellRNNv2(float learning_rate, float momentum, float weight_decay);
+        MitchellRNNv2(float learning_rate, float momentum, float weight_decay,
+                bool normal_weight_updates);
         float train(std::vector<std::array<float, NUM_INPUTS>> &sequence,
                 int truth_label);
         int inference(std::vector<std::array<float, NUM_INPUTS>> &sequence);

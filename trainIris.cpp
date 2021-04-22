@@ -27,6 +27,8 @@ int main(int argc, char **argv) {
     bool enable_gradient_clipping = true;
     bool enable_gradient_norm_threshold = true;
 
+    bool normal_weight_updates = false;
+
     bool He_initialization = false;
 
     int MODEL_FLAG = MITCHELLRNNv2;
@@ -161,7 +163,8 @@ int main(int argc, char **argv) {
                                                    gradient_norm_threshold, 
                                                    enable_gradient_clipping,
                                                    enable_gradient_norm_threshold,
-                                                   He_initialization));
+                                                   He_initialization,
+                                                   normal_weight_updates));
     }
     else {
 //        auto ptr = std::make_unique<MitchellRNNv2>(learning_rate,
@@ -169,7 +172,7 @@ int main(int argc, char **argv) {
 //        rnn_ptr = std::move(ptr);
 //        rnn = new MitchellRNNv2(learning_rate, momentum, weight_decay);
         rnn_ptr.reset(new MitchellRNNv2(learning_rate,
-                    momentum, weight_decay));
+                    momentum, weight_decay, normal_weight_updates));
     }
 
 

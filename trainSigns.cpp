@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
     bool enable_gradient_norm_threshold = false;
 
     bool He_initialization = false;
+    bool normal_weight_updates = false;
 
     int MODEL_FLAG = MITCHELLRNNv2;
 
@@ -97,6 +98,10 @@ int main(int argc, char **argv) {
 
         else if ((arg == "-H") || (arg == "--He_initialization")) {
             He_initialization = true;
+        }
+
+        else if ((arg == "-W") || (arg == "--normal_weight_updates")) {
+            normal_weight_updates = true;
         }
 
 
@@ -191,11 +196,12 @@ int main(int argc, char **argv) {
                                                              gradient_norm_threshold, 
                                                              enable_gradient_clipping,
                                                              enable_gradient_norm_threshold,
-                                                             He_initialization);
+                                                             He_initialization,
+                                                             normal_weight_updates);
     }
     else {
         rnn_ptr = std::make_unique<MitchellRNNv2>(learning_rate,
-                                momentum, weight_decay);
+                                momentum, weight_decay, normal_weight_updates);
     }
 
     // File to save best epoch's weights to
