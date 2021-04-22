@@ -26,6 +26,9 @@ int main(int argc, char **argv) {
     float gradient_clipping_threshold = 1.0;
     bool enable_gradient_clipping = true;
     bool enable_gradient_norm_threshold = true;
+
+    bool He_initialization = false;
+
     int MODEL_FLAG = MITCHELLRNNv2;
 
     for (int i = 1; i < argc; ++i) {
@@ -152,9 +155,13 @@ int main(int argc, char **argv) {
 //        rnn = new RecurrentNeuralNetworkv2(learning_rate, momentum, weight_decay);
 //        rnn_ptr = std::move(ptr);
         rnn_ptr.reset(new RecurrentNeuralNetworkv2(learning_rate, 
-                    momentum, weight_decay, gradient_clipping_threshold,
-                    gradient_norm_threshold, enable_gradient_clipping,
-                    enable_gradient_norm_threshold));
+                                                   momentum, 
+                                                   weight_decay, 
+                                                   gradient_clipping_threshold,
+                                                   gradient_norm_threshold, 
+                                                   enable_gradient_clipping,
+                                                   enable_gradient_norm_threshold,
+                                                   He_initialization));
     }
     else {
 //        auto ptr = std::make_unique<MitchellRNNv2>(learning_rate,

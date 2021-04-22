@@ -20,10 +20,17 @@ int main(int argc, char **argv) {
     float momentum = 0.01;
     float weight_decay = 0.001;
     int num_epochs = 100;
+
+    /* Gradient clipping hyperparameters */
     float gradient_clipping_threshold = 1.0;
     float gradient_norm_threshold = 1.0;
+
+    /* Flags to set to enable different gradient flow 
+     * and intitialization schema */
     bool enable_gradient_clipping = false;
     bool enable_gradient_norm_threshold = false;
+    bool He_initialization = false;
+
     int MODEL_FLAG = MITCHELLRNNv2;
 
     std::string model_tag = "MitchellRNNv2";
@@ -88,6 +95,11 @@ int main(int argc, char **argv) {
                 }
             }
         }
+
+        else if ((arg == "-H") || (arg == "--He_initialization")) {
+            He_initialization = true;
+        }
+
         else if ((arg == "-t") || (arg == "--model_type")) {
             if (i + 1 < argc) {
                 std::istringstream ss(argv[i+1]);
@@ -194,9 +206,13 @@ int main(int argc, char **argv) {
     std::unique_ptr<RNNBase> rnn_ptr;
     if (MODEL_FLAG == MODIFIEDRNNv2) {
         rnn_ptr = std::make_unique<RecurrentNeuralNetworkv2>(learning_rate,
-                                momentum, weight_decay, gradient_clipping_threshold,
-                                gradient_norm_threshold, enable_gradient_clipping,
-                                enable_gradient_norm_threshold);
+                                                             momentum, 
+                                                             weight_decay, 
+                                                             gradient_clipping_threshold,
+                                                             gradient_norm_threshold, 
+                                                             enable_gradient_clipping,
+                                                             enable_gradient_norm_threshold,
+                                                             He_initialization);
     }
     else {
         rnn_ptr = std::make_unique<MitchellRNNv2>(learning_rate,

@@ -11,12 +11,12 @@
 #define ALPHA 1e-2 // For leaky ReLU
 
 std::default_random_engine rnnv2_generator;
-std::uniform_real_distribution<float> rnnv2_distribution(-1, 1);
 
 RecurrentNeuralNetworkv2::RecurrentNeuralNetworkv2(
         float learning_rate, float momentum, float weight_decay,
         float grad_clip_threshold, float grad_norm_threshold,
-        bool enable_gradient_clipping, bool enable_gradient_norm_threshold) {
+        bool enable_gradient_clipping, bool enable_gradient_norm_threshold,
+        bool He_initialization) {
     RecurrentNeuralNetworkv2::learning_rate = learning_rate;
     RecurrentNeuralNetworkv2::momentum = momentum;
     RecurrentNeuralNetworkv2::weight_decay = weight_decay;
@@ -24,6 +24,7 @@ RecurrentNeuralNetworkv2::RecurrentNeuralNetworkv2(
     RecurrentNeuralNetworkv2::grad_norm_threshold = grad_norm_threshold;
     RecurrentNeuralNetworkv2::enable_gradient_clipping = enable_gradient_clipping;
     RecurrentNeuralNetworkv2::enable_gradient_norm_threshold = enable_gradient_norm_threshold;
+    RecurrentNeuralNetworkv2::He_initialization = He_initialization;
     RecurrentNeuralNetworkv2::initialize_weights();
 }
 
@@ -32,23 +33,61 @@ void RecurrentNeuralNetworkv2::initialize_weights() {
      * in range [-1.0, 1.0] */
 
     srand( (unsigned int) time(NULL));
+    std::uniform_real_distribution<float> uniform_distribution(-1, 1);
+
+
+    // If using He initialization scheme, the distribution for each layer 
+    // is different (and dependent on the number of inputs to the layer)
+    
+    // He initialization STDDEV: sqrt(2 / NUM_RECURRENT_UNITS + NUM_INPUTS)
+    std::normal_distribution<float> He_distribution_recurrent(0.0, 
+            std::sqrt(2.0 / (NUM_INPUTS + NUM_RECURRENT_UNITS)));
 
     // Initialize Recurrent weights 
     for (int i = 0; i < NUM_RECURRENT_UNITS; i++) {
         for (int j = 0; j < NUM_INPUTS + NUM_RECURRENT_UNITS; j++) {
-            recurrent_layer_weights[i][j] = rnnv2_distribution(rnnv2_generator);
+
+            if (He_initialization) {
+                recurrent_layer_weights[i][j] = He_distribution_recurrent(rnnv2_generator);
+            }
+            else {
+                recurrent_layer_weights[i][j] = uniform_distribution(rnnv2_generator);
+            }
         }
 
-        recurrent_layer_biases[i] = rnnv2_distribution(rnnv2_generator);
+        if (He_initialization) {
+            recurrent_layer_biases[i] = He_distribution_recurrent(rnnv2_generator);
+        }
+        else {
+            recurrent_layer_biases[i] = uniform_distribution(rnnv2_generator);
+        }
     }
+
+    // He initialization STDDEV: sqrt(2 / NUM_RECURRENT_UNITS)
+    std::normal_distribution<float> He_distribution_output(0.0, 
+            std::sqrt(2.0 / (NUM_RECURRENT_UNITS)));
 
     // Initialize output weights
     for (int i = 0; i < NUM_OUTPUTS; i++) {
         for (int j = 0; j < NUM_RECURRENT_UNITS; j++) {
-            output_layer_weights[i][j] = rnnv2_distribution(rnnv2_generator);
+
+            if (He_initialization) {
+                output_layer_weights[i][j] = He_distribution_output(rnnv2_generator);
+            }
+
+            else {
+                output_layer_weights[i][j] = uniform_distribution(rnnv2_generator);
+            }
         }
 
-        output_layer_biases[i] = rnnv2_distribution(rnnv2_generator);
+        if (He_initialization) {
+            output_layer_biases[i] = He_distribution_output(rnnv2_generator);
+        }
+
+        else {
+            output_layer_biases[i] = uniform_distribution(rnnv2_generator);
+        }
+
     }
 
     // initialize first instance in cache of 
@@ -122,6 +161,11 @@ std::array<float, NUM_OUTPUTS> RecurrentNeuralNetworkv2::cell_forward(
 
         // leaky relu activation 
         current_state[i] = RecurrentNeuralNetworkv2::leaky_relu(recurrent_i, ALPHA);
+
+        if (std::isnan(current_state[i])) {
+            int x = 5;
+            int y = 2;
+        }
     }
 //    cache_intermediate_recurrent_outputs.push_back(intermediate_output);
     
@@ -135,12 +179,22 @@ std::array<float, NUM_OUTPUTS> RecurrentNeuralNetworkv2::cell_forward(
 
         output_i += output_layer_biases[i];
         outputs[i] = output_i;
+
+        if (std::isnan(outputs[i])) {
+            int x = 5;
+            int y = 2;
+        }
     }
 
     /* Apply softmax activation */
     std::array<float, NUM_OUTPUTS> activated_outputs;
     for (int i = 0; i < NUM_OUTPUTS; i++) {
         activated_outputs[i] = RecurrentNeuralNetworkv2::softmax(outputs[i], outputs);
+
+        if (std::isnan(activated_outputs[i])) {
+            int x = 5;
+            int y = 2;
+        }
 //        if (std::isnan(activated_outputs[i])) {
 //            std::cout << " activated output is NAN\n";
 //            std::cout << " do something\n";
@@ -186,6 +240,8 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::cell_backpropag
          *  = (t - o) */
         output_error_terms[j] = (targets[j] - layer_outputs[j]);
     }
+
+    /* Clip gradient 
 
     for (int i = 0; i < NUM_OUTPUTS; i++ ) {
         for (int k = 0; k < NUM_RECURRENT_UNITS; k++) {
@@ -237,6 +293,7 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::cell_backpropag
         current_state_error_grads = gradient_norm_scaling(current_state_error_grads);
     }
 
+
     /* Concatenate inputs */
     std::array<float, NUM_INPUTS + NUM_RECURRENT_UNITS> concat_inputs;
     for (int i = 0; i < NUM_INPUTS; i++) 
@@ -253,6 +310,7 @@ std::array<float, NUM_RECURRENT_UNITS> RecurrentNeuralNetworkv2::cell_backpropag
         }
 
         cache_recurrent_bias_updates[j] += learning_rate * current_state_error_grads[j];
+
     }
 
     return current_state_error_grads;
