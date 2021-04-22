@@ -40,6 +40,10 @@ def reformat_vowel_trainset(datafile,
         :datafile: path to japanese vowel datafile 
         :datadir:  directory where we want to save data
     """
+    if os.path.exists(datadir): shutil.rmtree(datadir)
+
+    os.mkdir(datadir)
+
     NUM_BLOCKS = 30 # number of blocks per speaker
 
     person_id = 0
@@ -94,6 +98,10 @@ def reformat_vowel_testset(datafile,
 
     # pointer to let us know which person we are on
     pointer = 0
+
+    if os.path.exists(datadir): shutil.rmtree(datadir)
+
+    os.mkdir(datadir)
     
     with open(datafile, 'r') as f:
 
@@ -201,9 +209,17 @@ def get_whole_batch(trainpath,
     validation, and testing based on random 80-20-20 split 
     """
     # Directory names for new train and valid paths 
-    new_traindir = "./vowels/train/"
-    new_validdir = "./vowels/val/"
-    new_testdir = "./vowels/test/"
+    new_traindir = "dataset/vowels/train/"
+    if os.path.exists(new_traindir): shutil.rmtree(new_traindir)
+    os.mkdir(new_traindir)
+
+    new_validdir = "dataset/vowels/val/"
+    if os.path.exists(new_validdir): shutil.rmtree(new_validdir)
+    os.mkdir(new_validdir)
+
+    new_testdir = "dataset/vowels/test/"
+    if os.path.exists(new_testdir): shutil.rmtree(new_testdir)
+    os.mkdir(new_testdir)
 
     # dict mapping person to list of instances
     instance_list = {}
@@ -264,6 +280,7 @@ def get_whole_batch(trainpath,
         new_trainpath = os.path.join(new_traindir, person_id)
         if not os.path.isdir(new_trainpath):
             os.mkdir(new_trainpath)
+
         # if there are any files in the directory, remove them
         for root, dirs, files in os.walk(new_trainpath):
             for file in files:
@@ -305,10 +322,21 @@ def reformat_sign_dataset():
     Reorganize sign dataset into training, validation,
     and test sets 
     """
+    parentdir = "dataset"
+    signdir = os.path.join(parentdir, 'signs')
     split = [.8, .1, .1] #train/val/test split
     data_dict = {}
 
-    for root, dirs, files in os.walk('signs'):
+    # Create train, validation, and test folders with directories 
+    # for all labels 
+    trainpath = os.path.join(signdir, "train")
+    validpath = os.path.join(signdir, "valid")
+    testpath = os.path.join(signdir, "test")
+    if os.path.exists(trainpath): shutil.rmtree(trainpath)
+    if os.path.exists(validpath): shutil.rmtree(validpath)
+    if os.path.exists(testpath): shutil.rmtree(testpath)
+
+    for root, dirs, files in os.walk(signdir):
         # Get directory names (labels for dataset)
         if files:
             # Get name of root ("label")
@@ -319,24 +347,16 @@ def reformat_sign_dataset():
             for f in files:
                 data_dict[label].append(os.path.join(root, f))
 
-    # Create train, validation, and test folders with directories 
-    # for all labels 
-    trainpath = os.path.join("signs", "train")
-    validpath = os.path.join("signs", "valid")
-    testpath = os.path.join("signs", "test")
-    if os.path.exists(trainpath): shutil.rmtree(trainpath)
     os.mkdir(trainpath)
     for key in data_dict:
         folderpath = os.path.join(trainpath, key)
         os.mkdir(folderpath)
 
-    if os.path.exists(validpath): shutil.rmtree(validpath)
     os.mkdir(validpath)
     for key in data_dict:
         folderpath = os.path.join(validpath, key)
         os.mkdir(folderpath)
 
-    if os.path.exists(testpath): shutil.rmtree(testpath)
     os.mkdir(testpath)
     for key in data_dict:
         folderpath = os.path.join(testpath, key)
@@ -362,30 +382,60 @@ def reformat_sign_dataset():
             filename = sample.split('/')[-1]
             newpath = os.path.join(trainpath, key, filename)
             shutil.copy(sample, newpath)
+            # remove sample after copying
+            os.remove(sample)
 
         for sample in validsamples:
             filename = sample.split('/')[-1]
             newpath = os.path.join(validpath, key, filename)
             shutil.copy(sample, newpath)
+            # remove sample after copying 
+            os.remove(sample)
 
         for sample in testsamples:
             filename = sample.split('/')[-1]
             newpath = os.path.join(testpath, key, filename)
             shutil.copy(sample, newpath)
+            # remove sample after copying 
+            os.remove(sample)
 
+    # Remove original folders
+    for root, dirs, files in os.walk(signdir):
+        if dirs:
+            for d in dirs:
+                if d != "train" and d != "test" and d != "valid":
+#                    shutil.rmtree(signdir, d)
+                    fullpath = os.path.join(signdir, d)
+                    if os.path.exists(fullpath): shutil.rmtree(fullpath)
 
 if __name__ == '__main__':
-    train_datadir = "vowels/original_train"
-    train_datafile = os.path.join(train_datadir, "ae.train")
+
+    datadir = "dataset"
+    vowel_datadir = os.path.join(datadir, "vowels")
+
+    if os.path.exists(vowel_datadir): shutil.rmtree(vowel_datadir)
+    os.mkdir(vowel_datadir)
+
+    train_datadir = os.path.join(vowel_datadir, "temp_train")
+    if os.path.exists(train_datadir): shutil.rmtree(train_datadir)
+    os.mkdir(train_datadir)
+
+    train_datafile = os.path.join(datadir, "ae.train")
     reformat_vowel_trainset(train_datafile, train_datadir)
 #
-    val_datadir = "vowels/original_val"
-    val_datafile = os.path.join(val_datadir, "ae.test")
-    val_datafile = "ae.test"
+    val_datadir = os.path.join(vowel_datadir, "temp_val")
+    if os.path.exists(val_datadir): shutil.rmtree(val_datadir)
+    os.mkdir(val_datadir)
+
+    val_datafile = os.path.join(datadir, "ae.test")
     reformat_vowel_testset(val_datafile, val_datadir)
 #
     relabel_valid_set(train_datadir, val_datadir)
     get_whole_batch(train_datadir, val_datadir)
+    
+    # remove temp directories 
+    shutil.rmtree(val_datadir)
+    shutil.rmtree(train_datadir)
 #
 #    encode_iris_classifications()
 
