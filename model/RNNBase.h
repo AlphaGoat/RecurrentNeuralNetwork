@@ -85,9 +85,9 @@ class RNNBase {
         virtual void save_weights(std::string filename) = 0;
         virtual void load_weights(std::string filename) = 0;
         virtual ~RNNBase() {}
+        float normal_distribution(float x, float mean, float stddev);
 
     private:
-        float normal_distribution(float x, float mean, float stddev);
 
 //    private:
 

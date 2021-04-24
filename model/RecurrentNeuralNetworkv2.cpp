@@ -163,10 +163,6 @@ std::array<float, NUM_OUTPUTS> RecurrentNeuralNetworkv2::cell_forward(
         // leaky relu activation 
         current_state[i] = RecurrentNeuralNetworkv2::leaky_relu(recurrent_i, ALPHA);
 
-        if (std::isnan(current_state[i])) {
-            int x = 5;
-            int y = 2;
-        }
     }
 //    cache_intermediate_recurrent_outputs.push_back(intermediate_output);
     
@@ -181,10 +177,6 @@ std::array<float, NUM_OUTPUTS> RecurrentNeuralNetworkv2::cell_forward(
         output_i += output_layer_biases[i];
         outputs[i] = output_i;
 
-        if (std::isnan(outputs[i])) {
-            int x = 5;
-            int y = 2;
-        }
     }
 
     /* Apply softmax activation */
@@ -192,14 +184,6 @@ std::array<float, NUM_OUTPUTS> RecurrentNeuralNetworkv2::cell_forward(
     for (int i = 0; i < NUM_OUTPUTS; i++) {
         activated_outputs[i] = RecurrentNeuralNetworkv2::softmax(outputs[i], outputs);
 
-        if (std::isnan(activated_outputs[i])) {
-            int x = 5;
-            int y = 2;
-        }
-//        if (std::isnan(activated_outputs[i])) {
-//            std::cout << " activated output is NAN\n";
-//            std::cout << " do something\n";
-//        }
     }
 
     // Cache intermediate layer ouputs 
@@ -541,16 +525,7 @@ float RecurrentNeuralNetworkv2::softmax(float x, std::array<float, NUM_OUTPUTS> 
     for (int i = 0; i < NUM_OUTPUTS; i++) {
         denominator += std::exp(normalized_outputs[i]);
     }
-//    if (std::isnan(denominator)) {
-//        std::cout << "nan\n";
-//        std::cout << "nan message\n";
-//    }
     float activated_output = ( std::exp(x) / (denominator + OFFSET) );
-//    if (std::isnan(activated_output)) {
-//        std::cout << "nan\n";
-//        std::cout << "nan message\n";
-//    }
-//    return ( std::exp(x) / (denominator + OFFSET) );
     return activated_output;
 }
 

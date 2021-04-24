@@ -37,5 +37,5 @@ float RNNBase::normal_distribution(float x, float mean, float stddev) {
      * distribution at some x given a mean and 
      * stddev */
     float expTerm = std::exp((-1.0/2.0) * std::pow((x - mean) / stddev, 2.0));
-    return (1.0 / (mean * std::sqrt(2 * M_PI))) * expTerm;
+    return (1.0 / (stddev * std::sqrt(2 * M_PI))) * expTerm;
 }

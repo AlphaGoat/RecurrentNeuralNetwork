@@ -11,6 +11,9 @@
 //std::default_random_engine mitchell_generator;
 //std::uniform_real_distribution<float> mitchell_distribution(-1, 1);
 
+// Parameters for Normal distribution weight update 
+float STDDEV = 2.0;
+
 /* Generators for random weight initialization */
 std::default_random_engine mitchell_generator;
 std::uniform_real_distribution<float> mitchell_distribution(-1, 1);
@@ -174,11 +177,32 @@ std::array<float, NUM_RECURRENT_UNITS> MitchellRNNv2::cell_backpropagation(
     /* Perform updates for output layer */
     for (int j = 0; j < NUM_OUTPUTS; j++) {
         for (int k = 0; k < NUM_RECURRENT_UNITS; k++) {
-            cache_output_weight_updates[j][k] += learning_rate * output_error_terms[j]
-                            * current_state[k];
+
+            if (NORMAL_UPDATES_FLAG) {
+                float mean = NUM_TIME_STEPS / 2.0;
+                float w = MitchellRNNv2::normal_distribution((float) CURR_TIME_STEP,
+                        mean, STDDEV);
+                cache_output_weight_updates[j][k] += w * learning_rate 
+                    * output_error_terms[j] * current_state[k];
+            }
+            else {
+                float w = ( 1.0 / NUM_TIME_STEPS);
+                cache_output_weight_updates[j][k] += w *learning_rate 
+                    * output_error_terms[j] * current_state[k];
+            }
         }
 
-        cache_output_bias_updates[j] += learning_rate * output_error_terms[j];
+        if (NORMAL_UPDATES_FLAG) {
+            float mean = NUM_TIME_STEPS / 2.0;
+            float w = MitchellRNNv2::normal_distribution((float) CURR_TIME_STEP,
+                    mean, STDDEV);
+            cache_output_bias_updates[j] += w * learning_rate * output_error_terms[j];
+
+        }
+        else {
+            float w = ( 1.0 / NUM_TIME_STEPS );
+            cache_output_bias_updates[j] += w * learning_rate * output_error_terms[j];
+        }
     }
 
     /* Calculate recurrent error term for this time step */
@@ -225,11 +249,33 @@ std::array<float, NUM_RECURRENT_UNITS> MitchellRNNv2::cell_backpropagation(
     /* Perform updates for recurrent layer */ 
     for (int j = 0; j < NUM_RECURRENT_UNITS; j++) {
         for (int k = 0; k < NUM_INPUTS + NUM_RECURRENT_UNITS; k++) {
-            cache_recurrent_weight_updates[j][k] += learning_rate 
+
+            if (NORMAL_UPDATES_FLAG) {
+                float mean = NUM_TIME_STEPS / 2.0;
+                float w = MitchellRNNv2::normal_distribution((float) CURR_TIME_STEP,
+                        mean, STDDEV);
+                cache_recurrent_weight_updates[j][k] += w * learning_rate 
                     * current_state_error_grads[j] * concat_inputs[k];
+            }
+            else {
+                float w = ( 1.0 / NUM_TIME_STEPS );
+                cache_recurrent_weight_updates[j][k] += w * learning_rate 
+                        * current_state_error_grads[j] * concat_inputs[k];
+            }
         }
 
-        cache_recurrent_bias_updates[j] += learning_rate * current_state_error_grads[j];
+        if (NORMAL_UPDATES_FLAG) {
+            float mean = NUM_TIME_STEPS / 2.0;
+            float w = MitchellRNNv2::normal_distribution((float) CURR_TIME_STEP,
+                    mean, STDDEV);
+            cache_recurrent_bias_updates[j] += w * learning_rate 
+                * current_state_error_grads[j];
+        }
+        else {
+            float w = ( 1.0 / NUM_TIME_STEPS );
+            cache_recurrent_bias_updates[j] += w * learning_rate 
+                * current_state_error_grads[j];
+        }
     }
 
     return current_state_error_grads;
@@ -248,15 +294,15 @@ void MitchellRNNv2::perform_weight_updates() {
                         output_layer_weights[i][j];
 
             // Mean of the update over all time steps
-            float mean_weight_update = cache_output_weight_updates[i][j] / NUM_TIME_STEPS;
+//            float mean_weight_update = cache_output_weight_updates[i][j] / NUM_TIME_STEPS;
 
             /* weight update */
-            output_layer_weights[i][j] += mean_weight_update 
+            output_layer_weights[i][j] += cache_output_weight_updates[i][j] 
                                 + (momentum * prev_output_weight_updates[i][j])
                                 + weight_decay_term;
 
             /* Store updates for momentum calulation in next iteration */
-            prev_output_weight_updates[i][j] = mean_weight_update 
+            prev_output_weight_updates[i][j] = cache_output_weight_updates[i][j] 
                                 + (momentum * prev_output_weight_updates[i][j])
                                 + weight_decay_term;
         }
@@ -266,15 +312,15 @@ void MitchellRNNv2::perform_weight_updates() {
                     output_layer_biases[i];
 
         /* mean of the update over all time steps */
-        float mean_bias_update = cache_output_bias_updates[i] / NUM_TIME_STEPS;
+//        float mean_bias_update = cache_output_bias_updates[i] / NUM_TIME_STEPS;
 
         /* weight update */
-        output_layer_biases[i] += mean_bias_update 
+        output_layer_biases[i] += cache_output_bias_updates[i] 
                                 + momentum * prev_output_bias_updates[i]
                                 + weight_decay_term;
 
         /* Store updates for momentum calulation in next iteration */
-        prev_output_bias_updates[i] = mean_bias_update
+        prev_output_bias_updates[i] = cache_output_bias_updates[i]
                                 + momentum * prev_output_bias_updates[i]
                                 + weight_decay_term;
     }
@@ -285,10 +331,15 @@ void MitchellRNNv2::perform_weight_updates() {
             float weight_decay_term = -2 * weight_decay * learning_rate *
                     recurrent_layer_weights[i][j];
 
-            float mean_weight_update = cache_recurrent_weight_updates[i][j] / NUM_TIME_STEPS;
+//            float mean_weight_update = cache_recurrent_weight_updates[i][j] / NUM_TIME_STEPS;
 
             /* summing next layer's weight updates */
-            recurrent_layer_weights[i][j] += mean_weight_update
+            recurrent_layer_weights[i][j] += cache_recurrent_weight_updates[i][j]
+                    + (momentum * prev_recurrent_weight_updates[i][j])
+                    + weight_decay_term;
+
+            /* Store updates for momentum calculation in next iteration */
+            prev_recurrent_weight_updates[i][j] = cache_recurrent_weight_updates[i][j]
                     + (momentum * prev_recurrent_weight_updates[i][j])
                     + weight_decay_term;
 
@@ -298,10 +349,15 @@ void MitchellRNNv2::perform_weight_updates() {
                     recurrent_layer_biases[i];
 
         /* summing next layer's updates */
-        float mean_bias_update = cache_recurrent_bias_updates[i] / NUM_TIME_STEPS;
-        recurrent_layer_biases[i] += mean_bias_update
+//        float mean_bias_update = cache_recurrent_bias_updates[i] / NUM_TIME_STEPS;
+        recurrent_layer_biases[i] += cache_recurrent_bias_updates[i]
                         + (momentum * prev_recurrent_bias_updates[i])
                         + weight_decay_term;
+
+        /* Store updates for momentum calculation in next iteration */
+        prev_recurrent_bias_updates[i] = cache_recurrent_bias_updates[i]
+                + (momentum * prev_recurrent_bias_updates[i])
+                + weight_decay_term;
 
     }
     
@@ -376,9 +432,11 @@ float MitchellRNNv2::train(std::vector<std::array<float, NUM_INPUTS>> &sequence,
      * purposes, and has no effect on weight updates */
 
     // Normal backpropagation loop
+    CURR_TIME_STEP = NUM_TIME_STEPS;
     for (int i = 0; i < NUM_TIME_STEPS; i++) {
         error_grads = MitchellRNNv2::cell_backpropagation(encoded_label,
                                 cumulative_preds, error_grads, false);
+        CURR_TIME_STEP--;
     }
 
     /* Finally, update weights based on cumulative update vals */

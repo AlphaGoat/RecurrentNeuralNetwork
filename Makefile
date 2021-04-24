@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -I. -I./utils
+CFLAGS=-g -I. -I./utils
 OBJECTS=main.o
 DEPS=utils.h
 

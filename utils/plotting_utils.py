@@ -152,8 +152,8 @@ def plot_error_chart(train_datafile,
 
 
 if __name__ == '__main__':
-    trainfile = "logs/MitchellRNNv2_train_error_trainSigns.txt"
-    valfile = "logs/MitchellRNNv2_val_error_trainSigns.txt"
+    trainfile = "logs/ModifiedRNN_train_error_trainVowels.txt"
+    valfile = "logs/ModifiedRNN_val_error_trainVowels.txt"
     plot_error_chart(trainfile, valfile)
 
 
